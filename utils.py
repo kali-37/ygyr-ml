@@ -1,16 +1,7 @@
-"""
-TODO: Confusion Matrices
-- Zoom Ins
-- fuse
-
-Mask R-CNN
-Common utility functions and classes.
-
-Copyright (c) 2017 Matterport, Inc.
-Licensed under the MIT License (see LICENSE for details)
-Written by Waleed Abdulla
-"""
-
+#type:ignore
+'''
+    This was sourced from TACO dataset : https://github.com/pedropro/TACO/blob/master/detector/utils.py
+'''
 import sys
 import os
 import math
