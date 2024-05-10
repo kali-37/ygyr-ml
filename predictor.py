@@ -19,8 +19,9 @@ def predict(model, dataset, image:MatLike):
     # Paint the predictions 
     for class_id,rect in zip(r['class_ids'],r['rois']):
         y1, x1, y2, x2 = rect
-        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(image, dataset.class_names[class_id], (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+        if dataset.class_names[class_id].lower() not in ["other"]:
+            cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(image, dataset.class_names[class_id], (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
 
 
 
