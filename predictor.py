@@ -2,6 +2,7 @@
 import os
 from collections import namedtuple
 import csv
+from typing import Any
 import cv2
 import model
 
@@ -13,12 +14,14 @@ import cv2
 import time
 from threading import Thread
 from pathlib import Path
-from typing import Any # type:ignore[Any]
 from queue import Empty, Queue
 import os
 from random import randint
+import tensorflow as tf
+global graph
+graph = tf.get_default_graph() 
 
-QUEUE_T = Queue[os.PathLike[Any]]
+QUEUE_T = Any
 queue:QUEUE_T = Queue(maxsize=4)
 
 MODEL_DIR = "model_dir"
@@ -38,7 +41,10 @@ if not IN_PATH.exists():
 
 
 def predict(model, dataset, image:MatLike):
-    r = model.detect([image], verbose=0)[0]
+    if image is None:
+        return ""
+    with graph.as_default():
+        r = model.detect([image], verbose=0)[0]
     class_name:str=""
     max_rect = (-1,-1,-1,-1)
     # Paint the predictions 
@@ -58,6 +64,7 @@ def live_feed(model,dataset,fps:int=30):
     camera =cv2.VideoCapture(0) 
     while True:
         _,image = camera.read()
+        
         predict(model=model,dataset=dataset,image=image)
         cv2.imshow('image', image)
         cv2.waitKey(2)
@@ -79,14 +86,14 @@ def start_server(queue:QUEUE_T,model,dataset,image:MatLike):
             image = cv2.imread(str(item))
             class_name = predict(model,dataset,image)
             out_path = str(OUT_PATH/item.name)
+
             cv2.imwrite(out_path,image)
             with open(str(OUT_PATH/f"{item.stem}.txt"),"w") as fp:
                 fp.write(class_name)
             print(f"Task Done of , task[{item}]")
             os.remove(item)
+
         except Empty:
-            pass
-        except cv2.Error:
             pass
 
 def checker(queue:QUEUE_T):
@@ -133,7 +140,7 @@ if __name__ == '__main__':
     model.load_weights(model_path, model_path, by_name=True)
     # live_feed(model,dataset_test,30)
 
-    th_server = Thread(target=start_server,args=(queue,model,dataset_text,30))
+    th_server = Thread(target=start_server,args=(queue,model,dataset_test,30))
     th_checker = Thread(target=checker,args=(queue,))
 
     th_server.start()
