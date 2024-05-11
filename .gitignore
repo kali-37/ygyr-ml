@@ -10,3 +10,10 @@ virtual
 
 in
 out
+docker
+
+# Create docker container 
+# docker pull ubuntu:12.04
+
+# NOW YOU CAN RUN THE DOCKER CONTAINER as  such that create a new container and run the bash shell , so that our changes are saved in the container
+# 

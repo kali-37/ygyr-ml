@@ -108,7 +108,7 @@ def checker(queue:QUEUE_T):
 
 if __name__ == '__main__':
     pretrained_model_path = "epoch_565.h5"
-    dataset_dir="../data"
+    dataset_dir="data"
 
     # Read map of target classes
     class_map = {}
