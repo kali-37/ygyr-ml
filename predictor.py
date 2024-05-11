@@ -31,13 +31,21 @@ CLASS_MAP="./taco_config/map_10.csv"
 OUT_PATH = Path("out")
 IN_PATH = Path("in")
 
-if not OUT_PATH.exists():
-    os.makedirs(OUT_PATH)
+if OUT_PATH.exists():
+    os.system(f"rm -r {OUT_PATH}")
 
+if IN_PATH.exists():
+    os.system(f"rm -r {IN_PATH}")
 
-if not IN_PATH.exists():
-    os.makedirs(IN_PATH)
-    
+os.makedirs(IN_PATH)
+os.makedirs(OUT_PATH)
+
+def compare_area(rect2,rect1):
+    _,_,w1,h1 = rect1
+    _,_,w2,h2 = rect2
+    area1 = w1*h1
+    area2 = w2*h2
+    return area1>area2 
 
 
 def predict(model, dataset, image:MatLike):
@@ -52,11 +60,11 @@ def predict(model, dataset, image:MatLike):
         y1, x1, y2, x2 = rect
         rect = (x1,y1,x2-x1,y2-y1)
         if dataset.class_names[class_id].lower() not in ["other"]:
-            cv2.rectangle(image, (rect), (0, 255, 0), 2)
-            cv2.putText(image, dataset.class_names[class_id], (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
-            if rect>max_rect:
+            if compare_area(max_rect,rect): 
                 max_rect = rect
                 class_name = dataset.class_names[class_id]
+    cv2.rectangle(image, (max_rect), (0, 255, 0), 2)
+    cv2.putText(image,class_name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
     return class_name
 
 
@@ -92,7 +100,6 @@ def start_server(queue:QUEUE_T,model,dataset,image:MatLike):
                 fp.write(class_name)
             print(f"Task Done of , task[{item}]")
             os.remove(item)
-
         except Empty:
             pass
 
@@ -138,7 +145,7 @@ if __name__ == '__main__':
     model = MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
     model_path = str(__import__("pathlib").Path(pretrained_model_path).absolute())
     model.load_weights(model_path, model_path, by_name=True)
-    # live_feed(model,dataset_test,30)
+    live_feed(model,dataset_test,30)
 
     th_server = Thread(target=start_server,args=(queue,model,dataset_test,30))
     th_checker = Thread(target=checker,args=(queue,))

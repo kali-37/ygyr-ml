@@ -38,7 +38,6 @@ class Taco(utils.Dataset):
 
         # Load dataset
         dataset = json.load(open(ann_filepath, 'r'))
-
         # Replace dataset original classes before calling the coco Constructor
         # Some classes may be assigned background to remove them from the dataset
         self.replace_dataset_classes(dataset, class_map)
